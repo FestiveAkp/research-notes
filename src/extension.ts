@@ -1,26 +1,37 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+import { ResearchProvider } from './researchProvider';
+
 export function activate(context: vscode.ExtensionContext) {
-	
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "research" is now active!');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('research.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Research!');
-	});
+	const researchProvider = new ResearchProvider(context);
 
-	context.subscriptions.push(disposable);
+	vscode.window.registerTreeDataProvider('researchView', researchProvider);
+
+	let disposables = [
+		vscode.commands.registerCommand('research.add', async () => {
+			await researchProvider.add();
+		}),
+
+		vscode.commands.registerCommand('research.open', note => {
+			researchProvider.open(note);
+		}),
+
+		vscode.commands.registerCommand('research.remove', note => {
+			researchProvider.remove(note);
+		}),
+
+		vscode.commands.registerCommand('research.openAll', () => {
+			researchProvider.openAll();
+		}),
+
+		vscode.commands.registerCommand('research.removeAll', () => {
+			researchProvider.removeAll();
+		})
+	];
+
+	context.subscriptions.push(...disposables);
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}

@@ -10,7 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:research.helloWorld"
+        "onView:researchView"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -18,8 +18,85 @@
 			{
 				"command": "research.helloWorld",
 				"title": "Hello World"
+			},
+			{
+				"command": "research.add",
+				"title": "Add a Note",
+				"icon": "$(add)"
+			},
+			{
+				"command": "research.open",
+				"title": "Open Link",
+				"icon": "$(globe)"
+			},
+			{
+				"command": "research.remove",
+				"title": "Discard Note",
+				"icon": "$(close)"
+			},
+			{
+				"command": "research.openAll",
+				"title": "Open All Links",
+				"icon": "$(empty-window)"
+			},
+			{
+				"command": "research.removeAll",
+				"title": "Discard All Notes"
 			}
-		]
+		],
+		"views": {
+			"researchViewContainer": [
+				{
+					"id": "researchView",
+					"name": "Research"
+				}
+			]
+		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "researchViewContainer",
+					"title": "Research",
+					"icon": "$(note)"
+				}
+			]
+		},
+		"menus": {
+			"view/title": [
+				{
+					"command": "research.add",
+					"when": "view == researchView",
+					"group": "navigation"
+				},
+				{
+					"command": "research.openAll",
+					"when": "view == researchView",
+					"group": "navigation"
+				},
+				{
+					"command": "research.openAll",
+					"when": "view == researchView",
+					"group": "@0"
+				},
+				{
+					"command": "research.removeAll",
+					"when": "view == researchView",
+					"group": "@1"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "research.open",
+					"when": "view == researchView && viewItem == note",
+					"group": "inline@0"
+				},
+				{
+					"command": "research.remove",
+					"when": "view == researchView && viewItem == note",
+					"group": "inline@1"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
