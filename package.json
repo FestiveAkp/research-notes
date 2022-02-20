@@ -61,6 +61,12 @@
 				}
 			]
 		},
+		"viewsWelcome": [
+			{
+				"view": "researchView",
+				"contents": "Keep track of important or useful websites by adding notes here.\n[Add Note](command:research.add)"
+			}
+		],
 		"menus": {
 			"view/title": [
 				{
