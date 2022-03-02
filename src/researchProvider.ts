@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { nanoid } from 'nanoid';
 
 export class ResearchProvider implements vscode.TreeDataProvider<TreeResearchItem> {
 	private _onDidChangeTreeData: vscode.EventEmitter<TreeResearchItem | undefined | null | void> = 
@@ -6,15 +7,21 @@ export class ResearchProvider implements vscode.TreeDataProvider<TreeResearchIte
     readonly onDidChangeTreeData?: vscode.Event<void | TreeResearchItem | null | undefined> | undefined =
         this._onDidChangeTreeData.event;
 
-    // Notes are stored in memory for the time being
-    temp: { name: string, link: string }[] = [];
-
 	constructor(private context: vscode.ExtensionContext) {}
 
 	getChildren(item?: TreeResearchItem | undefined): vscode.ProviderResult<TreeResearchItem[]> {
-		if (item === undefined) {
-            return this.temp.map(research => new TreeResearchItem(research.name, research.link));
-		}
+        console.log(this.context.workspaceState.get('notes'));
+
+        if (item === undefined) {
+            // Retrieve root nodes of the tree
+            const notes: TreeResearchItem[] | undefined = this.context.workspaceState.get('notes');
+
+            if (notes === undefined) {
+                return [];
+            }
+
+            return notes.map(note => new TreeResearchItem(note.id, note.label, note.link));
+        }
 
 		return item.children;
 	}
@@ -54,14 +61,34 @@ export class ResearchProvider implements vscode.TreeDataProvider<TreeResearchIte
         }
 
         // Persist new note and update the tree
-        this.temp.push({ name, link });
+        const notes: TreeResearchItem[] | undefined = this.context.workspaceState.get('notes');
+        const note = new TreeResearchItem(nanoid(), name, link);
+
+        if (notes === undefined) {
+            this.context.workspaceState.update('notes', [note]);
+        } else {
+            this.context.workspaceState.update('notes', [...notes, note]);
+        }
+
         this._onDidChangeTreeData.fire(undefined);
         vscode.window.showInformationMessage(`Research - Added new research note '${name}'.`);
+
+        console.log(this.context.workspaceState.get('notes'));
     }
 
     remove(note: TreeResearchItem) {
+        console.log('To remove: ', note);
+
         // Remove note from storage
-        this.temp = this.temp.filter(item => item.name !== note.label && item.link !== note.link);
+        const notes: TreeResearchItem[] | undefined = this.context.workspaceState.get('notes');
+
+        if (notes === undefined) {
+            return;
+        }
+
+        // const filteredNotes = notes.filter(item => item.label !== note.label && item.link !== note.link);
+        const filteredNotes = notes.filter(item => item.id !== note.id);
+        this.context.workspaceState.update('notes', filteredNotes);
 
         // Update the tree
         this._onDidChangeTreeData.fire(undefined);
@@ -74,14 +101,21 @@ export class ResearchProvider implements vscode.TreeDataProvider<TreeResearchIte
 
     openAll() {
         // Open every stored link
-        this.temp.forEach(note => {
-            vscode.env.openExternal(vscode.Uri.parse(note.link));
+        const notes: TreeResearchItem[] | undefined = this.context.workspaceState.get('notes');
+
+        if (notes === undefined) {
+            return;
+        }
+
+        notes.forEach(note => {
+            const uri = vscode.Uri.parse(note.link);
+            vscode.env.openExternal(uri);
         });
     }
 
     removeAll() {
         // Remove all notes from storage
-        this.temp = [];
+        this.context.workspaceState.update('notes', []);
 
         // Update the tree
         this._onDidChangeTreeData.fire(undefined);
@@ -91,11 +125,15 @@ export class ResearchProvider implements vscode.TreeDataProvider<TreeResearchIte
 
 class TreeResearchItem extends vscode.TreeItem {
 	children: TreeResearchItem[] | undefined;
+    label: string;
     link: string;
+    id: string;
 
-	constructor(label: string, link: string, children?: TreeResearchItem[]) {
+	constructor(id: string, label: string, link: string, children?: TreeResearchItem[]) {
 		super(label, children === undefined ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Expanded);
+        this.id = id;
 		this.children = children;
+        this.label = label;
         this.link = link;
         this.iconPath = new vscode.ThemeIcon('link');
         this.contextValue = 'note';
