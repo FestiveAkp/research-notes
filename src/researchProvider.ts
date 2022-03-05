@@ -113,6 +113,23 @@ export class ResearchProvider implements vscode.TreeDataProvider<TreeResearchIte
         });
     }
 
+    async copyAll() {
+        // Retrieve every stored note
+        const notes: TreeResearchItem[] | undefined = this.context.workspaceState.get('notes');
+
+        if (notes === undefined) {
+            return;
+        }
+
+        // Write JSON string to clipboard
+        const output = notes.map(({label, description}) => ({ label, value: description }));
+        await vscode.env.clipboard.writeText(JSON.stringify(output, null, 2));
+
+        // Update the tree and let the user know
+        this._onDidChangeTreeData.fire(undefined);
+        vscode.window.showInformationMessage('Research - Copied all notes to clipboard.');
+    }
+
     removeAll() {
         // Remove all notes from storage
         this.context.workspaceState.update('notes', []);

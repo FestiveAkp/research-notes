@@ -36,8 +36,12 @@
       },
       {
         "command": "research.openAll",
-        "title": "Open All Links",
+        "title": "Open All Links in Browser",
         "icon": "$(empty-window)"
+      },
+      {
+        "command": "research.copyAll",
+        "title": "Export Notes as JSON"
       },
       {
         "command": "research.removeAll",
@@ -81,6 +85,11 @@
         },
         {
           "command": "research.openAll",
+          "when": "view == researchView",
+          "group": "@0"
+        },
+        {
+          "command": "research.copyAll",
           "when": "view == researchView",
           "group": "@0"
         },

@@ -26,6 +26,10 @@ export function activate(context: vscode.ExtensionContext) {
 			researchProvider.openAll();
 		}),
 
+		vscode.commands.registerCommand('research.copyAll', () => {
+			researchProvider.copyAll();
+		}),
+
 		vscode.commands.registerCommand('research.removeAll', () => {
 			researchProvider.removeAll();
 		})
